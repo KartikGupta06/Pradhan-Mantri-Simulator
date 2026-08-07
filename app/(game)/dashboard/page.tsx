@@ -1,35 +1,77 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { pageTransition } from '@/animations/motion';
-import { StatTile } from '@/components/ui/StatTile';
-import { MapContainer } from '@/components/ui/MapContainer';
-import { Badge } from '@/components/ui/Badge';
-import { Landmark, TrendingUp, Users, Percent } from 'lucide-react';
+import { PlayerProfileCard } from '@/components/ui/PlayerProfileCard';
+import { TopStatusBar } from '@/components/ui/TopStatusBar';
+import { HeroIndiaMap } from '@/components/game/HeroIndiaMap';
+import { EmergencyBanner } from '@/components/ui/EmergencyBanner';
+import { CountryHealthGrid } from '@/components/game/CountryHealthGrid';
+import { PrimaryActionBar } from '@/components/game/PrimaryActionBar';
+import { BottomSheet } from '@/components/ui/BottomSheet';
+import { Button } from '@/components/ui/Button';
 
 export default function DashboardPage() {
+  const [activeModal, setActiveModal] = useState<string | null>(null);
+
   return (
-    <motion.div {...pageTransition} className="flex flex-col gap-4 flex-1">
-      {/* Header Strip Placeholder */}
-      <div className="flex items-center justify-between border-b border-gold/15 pb-3">
-        <div>
-          <h1 className="font-heading text-lg gold-gradient-text">Prime Minister</h1>
-          <p className="text-xs text-slate-400 font-sans">Republic of India</p>
+    <motion.div
+      {...pageTransition}
+      className="flex-1 flex flex-col gap-2.5 pb-1 max-w-full overflow-x-hidden"
+    >
+      {/* 1. Top PM Profile Bar */}
+      <PlayerProfileCard
+        onNotificationClick={() => setActiveModal('notifications')}
+        onSettingsClick={() => setActiveModal('settings')}
+      />
+
+      {/* 2. National Stats Strip */}
+      <TopStatusBar />
+
+      {/* 3. Hero India Map Viewport */}
+      <HeroIndiaMap
+        onCrisisClick={() => setActiveModal('crisis')}
+        onIntelClick={() => setActiveModal('intel')}
+        onDiplomacyClick={() => setActiveModal('diplomacy')}
+        onWorldClick={() => setActiveModal('world')}
+      />
+
+      {/* 4. Active Crisis Panel */}
+      <EmergencyBanner
+        title="Flood in Assam"
+        description="Lives and infrastructure at risk. People are looking for your response."
+        urgentCount={3}
+        onRespondClick={() => setActiveModal('crisis')}
+      />
+
+      {/* 5. Country Health Cards (Popularity, Treasury, Economy, Election) */}
+      <CountryHealthGrid onCardClick={(metric) => setActiveModal(metric)} />
+
+      {/* 6. Primary Action Bar (Achievements, TAKE DECISION CTA, Objectives) */}
+      <PrimaryActionBar
+        onTakeDecisionClick={() => setActiveModal('decision')}
+        onAchievementsClick={() => setActiveModal('achievements')}
+        onObjectivesClick={() => setActiveModal('objectives')}
+      />
+
+      {/* Interactive Bottom Sheet Popup Shell for UI Feedback */}
+      <BottomSheet
+        isOpen={!!activeModal}
+        onClose={() => setActiveModal(null)}
+        title={activeModal ? activeModal.toUpperCase() + ' DETAILS' : ''}
+      >
+        <div className="flex flex-col gap-3 py-2 text-center">
+          <p className="text-xs text-slate-300 font-sans">
+            Strategic view placeholder for <span className="text-gold font-bold">{activeModal}</span>. Game engine simulation logic will connect here in future sprints.
+          </p>
+          <div className="pt-2 border-t border-gold/15 flex justify-end">
+            <Button variant="primary" size="sm" onClick={() => setActiveModal(null)}>
+              Close Panel
+            </Button>
+          </div>
         </div>
-        <Badge variant="gold">Sprint 0 Foundation</Badge>
-      </div>
-
-      {/* National Stats Grid Placeholder */}
-      <div className="grid grid-cols-2 gap-2">
-        <StatTile label="Treasury" value="₹ -- Cr" trend="neutral" icon={<Landmark className="w-4 h-4" />} />
-        <StatTile label="GDP Growth" value="-- %" trend="up" icon={<TrendingUp className="w-4 h-4" />} />
-        <StatTile label="Approval" value="-- %" trend="neutral" icon={<Users className="w-4 h-4" />} />
-        <StatTile label="Inflation" value="-- %" trend="down" icon={<Percent className="w-4 h-4" />} />
-      </div>
-
-      {/* Map Viewport Shell */}
-      <MapContainer />
+      </BottomSheet>
     </motion.div>
   );
 }
