@@ -11,9 +11,19 @@ import { CountryHealthGrid } from '@/components/game/CountryHealthGrid';
 import { PrimaryActionBar } from '@/components/game/PrimaryActionBar';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Button } from '@/components/ui/Button';
+import { DecisionFlowContainer } from '@/components/game/decision/DecisionFlowContainer';
 
 export const HomeScreen: React.FC = () => {
   const [activeModal, setActiveModal] = useState<string | null>(null);
+
+  // If Decision Flow active, render full decision flow experience
+  if (activeModal === 'decision') {
+    return (
+      <div className="w-full flex-1 flex flex-col p-2 sm:p-2.5">
+        <DecisionFlowContainer onCompleteFlow={() => setActiveModal(null)} />
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -42,7 +52,7 @@ export const HomeScreen: React.FC = () => {
         title="Flood in Assam"
         description="Lives and infrastructure at risk. People are looking for your response."
         urgentCount={3}
-        onRespondClick={() => setActiveModal('crisis')}
+        onRespondClick={() => setActiveModal('decision')}
       />
 
       {/* 5. Country Health Cards (4-Column Compact Single Row) */}
@@ -57,7 +67,7 @@ export const HomeScreen: React.FC = () => {
 
       {/* Interactive Bottom Sheet Popup Shell for UI Feedback */}
       <BottomSheet
-        isOpen={!!activeModal}
+        isOpen={!!activeModal && activeModal !== 'decision'}
         onClose={() => setActiveModal(null)}
         title={activeModal ? activeModal.toUpperCase() + ' DETAILS' : ''}
       >
