@@ -1,27 +1,77 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { pageTransition } from '@/animations/motion';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Users } from 'lucide-react';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { ModulePlaceholderCard } from '@/components/ui/ModulePlaceholderCard';
+import { BottomSheet } from '@/components/ui/BottomSheet';
+import { Button } from '@/components/ui/Button';
+import { Users, ShieldCheck, Landmark, UserX } from 'lucide-react';
 
 export default function CabinetPage() {
+  const [activeModule, setActiveModule] = useState<string | null>(null);
+
   return (
-    <motion.div {...pageTransition} className="flex flex-col gap-4 flex-1">
-      <div className="flex items-center justify-between border-b border-gold/15 pb-3">
-        <h1 className="font-heading text-lg gold-gradient-text">Union Cabinet</h1>
-        <Badge variant="slate">Placeholder</Badge>
+    <motion.div
+      {...pageTransition}
+      className="w-full flex flex-col gap-3 pb-8 max-w-full select-none"
+    >
+      {/* Top Page Header */}
+      <PageHeader
+        title="UNION CABINET"
+        subtitle="Ministry Governance & Portfolios"
+        badgeText="Cabinet"
+      />
+
+      {/* Module Placeholder Cards Stack */}
+      <div className="flex flex-col gap-2.5">
+        <ModulePlaceholderCard
+          icon={<Users className="w-5 h-5 text-gold" />}
+          title="Assign & Reshuffle Ministers"
+          description="Appoint key ministers to Home, Finance, Defense, and External Affairs."
+          onClick={() => setActiveModule('Assign & Reshuffle Ministers')}
+        />
+
+        <ModulePlaceholderCard
+          icon={<ShieldCheck className="w-5 h-5 text-emerald" />}
+          title="Minister Relationships & Loyalty"
+          description="Monitor PM relationship metrics, integrity scores, and scandal risks."
+          onClick={() => setActiveModule('Minister Relationships & Loyalty')}
+        />
+
+        <ModulePlaceholderCard
+          icon={<Landmark className="w-5 h-5 text-cyan-400" />}
+          title="Cabinet Emergency Meetings"
+          description="Convene cabinet consensus meetings before tabling major national reform bills."
+          onClick={() => setActiveModule('Cabinet Emergency Meetings')}
+        />
+
+        <ModulePlaceholderCard
+          icon={<UserX className="w-5 h-5 text-crimson" />}
+          title="Resignations & Coalition Stability"
+          description="Manage minister resignations, party dissent, and alliance stability."
+          onClick={() => setActiveModule('Resignations & Coalition Stability')}
+        />
       </div>
 
-      <Card variant="glass" className="flex flex-col items-center justify-center p-6 text-center gap-3">
-        <Users className="w-8 h-8 text-gold opacity-60" />
-        <h3 className="font-heading text-sm text-gold-light">Cabinet Architecture Shell</h3>
-        <p className="text-xs text-slate-400 font-sans max-w-[240px]">
-          Ministers system & reshuffle mechanics will be mounted here in future sprints.
-        </p>
-      </Card>
+      {/* Interactive Bottom Sheet Popup */}
+      <BottomSheet
+        isOpen={!!activeModule}
+        onClose={() => setActiveModule(null)}
+        title={activeModule ? activeModule.toUpperCase() : ''}
+      >
+        <div className="flex flex-col gap-3 py-2 text-center">
+          <p className="text-xs text-slate-300 font-sans">
+            Cabinet management module for <span className="text-gold font-bold">{activeModule}</span> will be connected in future simulation sprints.
+          </p>
+          <div className="pt-2 border-t border-gold/15 flex justify-end">
+            <Button variant="primary" size="sm" onClick={() => setActiveModule(null)}>
+              Close Panel
+            </Button>
+          </div>
+        </div>
+      </BottomSheet>
     </motion.div>
   );
 }
