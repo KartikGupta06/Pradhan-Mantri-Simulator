@@ -1,7 +1,7 @@
 import { Variants, TargetAndTransition } from 'framer-motion';
 
 /**
- * Reusable Motion Presets for Mobile Strategy Game UI
+ * Reusable Motion Presets for Mobile Strategy Game UI Kit
  */
 
 export const tapAnimation = {
@@ -9,10 +9,20 @@ export const tapAnimation = {
   transition: { type: 'spring' as const, stiffness: 400, damping: 25 },
 };
 
+export const pressAnimation = {
+  whileTap: { scale: 0.92 },
+  transition: { type: 'spring' as const, stiffness: 500, damping: 30 },
+};
+
 export const cardHover: TargetAndTransition = {
   scale: 1.02,
   y: -2,
   transition: { duration: 0.2, ease: 'easeOut' },
+};
+
+export const cardReveal: Variants = {
+  initial: { opacity: 0, y: 16, scale: 0.97 },
+  animate: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.3, ease: 'easeOut' } },
 };
 
 export const pageTransition: Variants = {
@@ -27,6 +37,18 @@ export const popupAnimation: Variants = {
   exit: { opacity: 0, scale: 0.95, y: 10, transition: { duration: 0.15 } },
 };
 
+export const bottomSheetAnimation: Variants = {
+  initial: { opacity: 0, y: '100%' },
+  animate: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 30 } },
+  exit: { opacity: 0, y: '100%', transition: { duration: 0.2 } },
+};
+
+export const floatingNotificationAnimation: Variants = {
+  initial: { opacity: 0, y: -30, scale: 0.95 },
+  animate: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring' as const, stiffness: 400, damping: 25 } },
+  exit: { opacity: 0, y: -20, scale: 0.95, transition: { duration: 0.15 } },
+};
+
 export const scaleIn: Variants = {
   initial: { opacity: 0, scale: 0.95 },
   animate: { opacity: 1, scale: 1, transition: { duration: 0.2 } },
@@ -34,6 +56,11 @@ export const scaleIn: Variants = {
 
 export const slideUp: Variants = {
   initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+};
+
+export const slideDown: Variants = {
+  initial: { opacity: 0, y: -20 },
   animate: { opacity: 1, y: 0, transition: { duration: 0.3 } },
 };
 
