@@ -32,25 +32,30 @@ export const StatCard: React.FC<StatCardProps> = ({
       variant="glass"
       interactive={!!onViewDetails}
       onClick={onViewDetails}
-      className={cn('flex flex-col items-center justify-between p-3.5 text-center gap-2 border-gold/20', className)}
+      className={cn(
+        'flex flex-col items-center justify-between p-2 sm:p-2.5 text-center gap-1 border-gold/20 overflow-hidden w-full h-full',
+        className
+      )}
     >
       {/* Circular Ring with Center Icon */}
-      <ProgressRing value={percentage} size={70} strokeWidth={6} variant={ringVariant}>
+      <ProgressRing value={percentage} size={54} strokeWidth={5} variant={ringVariant}>
         {icon && (
-          <div className="w-8 h-8 rounded-full bg-navy-surface border border-gold/30 flex items-center justify-center text-gold">
+          <div className="w-6 h-6 rounded-full bg-navy-surface border border-gold/30 flex items-center justify-center text-gold">
             {icon}
           </div>
         )}
       </ProgressRing>
 
       {/* Main Value & Labels */}
-      <div className="flex flex-col items-center">
-        <span className="font-mono text-base font-bold text-gold-light tracking-tight">{value}</span>
-        <span className="font-heading text-[10px] uppercase tracking-widest text-slate-400 mt-0.5">
+      <div className="flex flex-col items-center w-full min-w-0">
+        <span className="font-mono text-xs sm:text-sm font-bold text-gold-light tracking-tight truncate w-full">
+          {value}
+        </span>
+        <span className="font-heading text-[9px] uppercase tracking-widest text-slate-400 mt-0.5 truncate w-full">
           {title}
         </span>
         {subtitle && (
-          <span className="text-[10px] font-sans font-semibold text-emerald mt-0.5">
+          <span className="text-[9px] font-sans font-semibold text-emerald mt-0.5 truncate w-full">
             {subtitle}
           </span>
         )}
@@ -58,9 +63,9 @@ export const StatCard: React.FC<StatCardProps> = ({
 
       {/* View Details Link */}
       {onViewDetails && (
-        <div className="flex items-center gap-0.5 text-[10px] font-sans text-slate-400 hover:text-gold transition-colors pt-1 border-t border-gold/10 w-full justify-center">
+        <div className="flex items-center gap-0.5 text-[9px] font-sans text-slate-400 hover:text-gold transition-colors pt-0.5 border-t border-gold/10 w-full justify-center shrink-0">
           <span>View Details</span>
-          <ChevronRight className="w-3 h-3" />
+          <ChevronRight className="w-2.5 h-2.5" />
         </div>
       )}
     </Card>

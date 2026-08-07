@@ -15,7 +15,7 @@ export const CountryHealthGrid: React.FC<CountryHealthGridProps> = ({
   className,
 }) => {
   return (
-    <div className={cn('grid grid-cols-2 sm:grid-cols-4 gap-2 w-full', className)}>
+    <div className={cn('grid grid-cols-4 gap-1.5 w-full shrink-0', className)}>
       {/* Popularity Card */}
       <StatCard
         title="POPULARITY"
@@ -23,7 +23,7 @@ export const CountryHealthGrid: React.FC<CountryHealthGridProps> = ({
         subtitle="Very Good"
         percentage={76}
         ringVariant="emerald"
-        icon={<Heart className="w-4 h-4 text-emerald" />}
+        icon={<Heart className="w-3.5 h-3.5 text-emerald" />}
         onViewDetails={() => onCardClick?.('popularity')}
       />
 
@@ -34,7 +34,7 @@ export const CountryHealthGrid: React.FC<CountryHealthGridProps> = ({
         subtitle="Healthy"
         percentage={82}
         ringVariant="gold"
-        icon={<Coins className="w-4 h-4 text-gold" />}
+        icon={<Coins className="w-3.5 h-3.5 text-gold" />}
         onViewDetails={() => onCardClick?.('treasury')}
       />
 
@@ -45,7 +45,7 @@ export const CountryHealthGrid: React.FC<CountryHealthGridProps> = ({
         subtitle="Growing"
         percentage={70}
         ringVariant="cyan"
-        icon={<TrendingUp className="w-4 h-4 text-cyan-400" />}
+        icon={<TrendingUp className="w-3.5 h-3.5 text-cyan-400" />}
         onViewDetails={() => onCardClick?.('economy')}
       />
 
@@ -56,7 +56,7 @@ export const CountryHealthGrid: React.FC<CountryHealthGridProps> = ({
         subtitle="Time Left"
         percentage={40}
         ringVariant="gold"
-        icon={<Vote className="w-4 h-4 text-purple-400" />}
+        icon={<Vote className="w-3.5 h-3.5 text-purple-400" />}
         onViewDetails={() => onCardClick?.('election')}
       />
     </div>

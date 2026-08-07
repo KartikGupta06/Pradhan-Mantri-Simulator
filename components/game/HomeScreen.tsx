@@ -18,7 +18,7 @@ export const HomeScreen: React.FC = () => {
   return (
     <motion.div
       {...pageTransition}
-      className="flex-1 flex flex-col gap-2.5 pb-1 max-w-full overflow-x-hidden"
+      className="flex-1 h-full flex flex-col justify-between p-2 sm:p-2.5 gap-2 max-w-full overflow-hidden select-none"
     >
       {/* 1. Top PM Profile Bar */}
       <PlayerProfileCard
@@ -29,7 +29,7 @@ export const HomeScreen: React.FC = () => {
       {/* 2. National Stats Strip */}
       <TopStatusBar />
 
-      {/* 3. Hero India Map Viewport */}
+      {/* 3. Hero India Map Viewport (Visual Hero) */}
       <HeroIndiaMap
         onCrisisClick={() => setActiveModal('crisis')}
         onIntelClick={() => setActiveModal('intel')}
@@ -45,10 +45,10 @@ export const HomeScreen: React.FC = () => {
         onRespondClick={() => setActiveModal('crisis')}
       />
 
-      {/* 5. Country Health Cards (Popularity, Treasury, Economy, Election) */}
+      {/* 5. Country Health Cards (4-Column Compact Single Row) */}
       <CountryHealthGrid onCardClick={(metric) => setActiveModal(metric)} />
 
-      {/* 6. Primary Action Bar (Achievements, TAKE DECISION CTA, Objectives) */}
+      {/* 6. Primary Action Bar (Achievements, Dominant TAKE DECISION CTA, Objectives) */}
       <PrimaryActionBar
         onTakeDecisionClick={() => setActiveModal('decision')}
         onAchievementsClick={() => setActiveModal('achievements')}

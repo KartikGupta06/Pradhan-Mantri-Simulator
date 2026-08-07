@@ -23,7 +23,7 @@ export const TopStatusBar: React.FC<TopStatusBarProps> = ({
   return (
     <div
       className={cn(
-        'w-full glass-panel rounded-game-sm px-2 py-1.5 grid grid-cols-4 gap-1 z-30 shrink-0',
+        'w-full glass-panel rounded-game-sm px-1.5 py-1 grid grid-cols-4 gap-1 z-30 shrink-0 overflow-hidden',
         className
       )}
     >
