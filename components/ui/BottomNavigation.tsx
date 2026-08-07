@@ -20,7 +20,7 @@ export const BottomNavigation: React.FC = () => {
   const pathname = usePathname();
 
   return (
-    <nav className="glass-panel border-t border-gold/25 bg-[#060913]/95 px-1 py-1.5 flex items-center justify-around z-40 shrink-0 shadow-2xl">
+    <nav className="glass-panel border-t border-gold/25 bg-[#060913]/95 px-1 pt-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] flex items-center justify-around z-40 shrink-0 shadow-2xl">
       {NAV_ITEMS.map((item) => {
         const Icon = item.icon;
         const isActive =

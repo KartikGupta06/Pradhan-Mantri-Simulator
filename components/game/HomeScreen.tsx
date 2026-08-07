@@ -18,7 +18,7 @@ export const HomeScreen: React.FC = () => {
   return (
     <motion.div
       {...pageTransition}
-      className="flex-1 h-full flex flex-col justify-between p-2 sm:p-2.5 gap-2 max-w-full overflow-hidden select-none"
+      className="w-full flex flex-col gap-3 pb-8 max-w-full select-none"
     >
       {/* 1. Top PM Profile Bar */}
       <PlayerProfileCard
