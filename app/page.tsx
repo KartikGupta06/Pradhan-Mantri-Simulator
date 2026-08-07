@@ -1,7 +1,5 @@
-'use client';
+import { redirect } from 'next/navigation';
 
-import DashboardPage from '@/app/(game)/dashboard/page';
-
-export default function HomePage() {
-  return <DashboardPage />;
+export default function RootPage() {
+  redirect('/dashboard');
 }
