@@ -5,6 +5,9 @@ import { DerivedEconomyMetrics, EconomicSnapshot } from './economy';
 import { PublicOpinionState } from './publicOpinion';
 import { ElectionState } from './election';
 
+export type { ElectionState } from './election';
+export type { PublicOpinionState } from './publicOpinion';
+
 /**
  * Core Game Architecture Types & Centralized Game State Definition
  */
