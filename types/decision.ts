@@ -1,6 +1,15 @@
 /**
- * Core Decision Engine Data Types
+ * Core Decision & Policy Engine Data Types
  */
+
+export type PolicyCategory =
+  | 'All'
+  | 'Economy'
+  | 'Education'
+  | 'Healthcare'
+  | 'Agriculture'
+  | 'Infrastructure'
+  | 'National';
 
 export interface StatEffects {
   treasury?: number; // Modify Treasury in Cr (e.g. -500)
@@ -22,11 +31,12 @@ export interface DecisionOption {
 export interface Decision {
   id: string;
   title: string;
-  category: string;
+  category: Exclude<PolicyCategory, 'All'> | string;
   description: string;
   situation: string;
   urgency: 'Low' | 'Medium' | 'High' | string;
   estimatedCost: string;
+  status?: 'Available' | 'In Progress' | 'Completed';
   options: DecisionOption[];
 }
 

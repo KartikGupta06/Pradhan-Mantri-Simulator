@@ -45,6 +45,7 @@ interface GameStoreState {
 
   // Actions
   initialize: () => void;
+  setActiveDecision: (decision: Decision) => void;
   executeDecision: (optionId: string) => DecisionResult | null;
   executeDecisionByOption: (option: DecisionOption) => DecisionResult;
   resetGame: () => void;
@@ -65,6 +66,10 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
     } else {
       set({ gameState: INITIAL_GAME_STATE, isInitialized: true });
     }
+  },
+
+  setActiveDecision: (decision: Decision) => {
+    set({ activeDecision: decision });
   },
 
   executeDecision: (optionId: string) => {
@@ -103,6 +108,7 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
     clearGameState();
     set({
       gameState: INITIAL_GAME_STATE,
+      activeDecision: ASSAM_FLOOD_DECISION,
       latestResult: null,
     });
   },

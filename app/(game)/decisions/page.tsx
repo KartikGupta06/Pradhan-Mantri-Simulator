@@ -4,81 +4,103 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { pageTransition } from '@/animations/motion';
 import { PageHeader } from '@/components/ui/PageHeader';
-import { ModulePlaceholderCard } from '@/components/ui/ModulePlaceholderCard';
-import { BottomSheet } from '@/components/ui/BottomSheet';
-import { Button } from '@/components/ui/Button';
-import { Coins, Sprout, GraduationCap, HeartPulse, Scale } from 'lucide-react';
+import { PolicyCard } from '@/components/game/policy/PolicyCard';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { DecisionFlowContainer } from '@/components/game/decision/DecisionFlowContainer';
+import { POLICIES_CATALOG } from '@/constants/policies';
+import { PolicyCategory, Decision } from '@/types/decision';
+import { useGameStore } from '@/game/store/useGameStore';
+import { cn } from '@/lib/utils';
+
+const CATEGORIES: PolicyCategory[] = [
+  'All',
+  'Economy',
+  'Education',
+  'Healthcare',
+  'Agriculture',
+  'Infrastructure',
+  'National',
+];
 
 export default function DecisionsPage() {
-  const [activeModule, setActiveModule] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<PolicyCategory>('All');
+  const [activePolicyModal, setActivePolicyModal] = useState<Decision | null>(null);
+
+  const setActiveDecision = useGameStore((state) => state.setActiveDecision);
+
+  const filteredPolicies = POLICIES_CATALOG.filter((policy) => {
+    if (selectedCategory === 'All') return true;
+    return policy.category.toLowerCase() === selectedCategory.toLowerCase();
+  });
+
+  const handleOpenPolicy = (policy: Decision) => {
+    setActiveDecision(policy);
+    setActivePolicyModal(policy);
+  };
+
+  const handleCompleteFlow = () => {
+    setActivePolicyModal(null);
+  };
+
+  // If Decision Flow active for selected policy, render Decision Flow experience
+  if (activePolicyModal) {
+    return (
+      <div className="w-full flex-1 flex flex-col p-2 sm:p-2.5">
+        <DecisionFlowContainer onCompleteFlow={handleCompleteFlow} />
+      </div>
+    );
+  }
 
   return (
     <motion.div
       {...pageTransition}
-      className="w-full flex flex-col gap-3 pb-8 max-w-full select-none"
+      className="w-full flex flex-col gap-3.5 pb-8 max-w-full select-none"
     >
       {/* Top Page Header */}
       <PageHeader
-        title="POLICY & REFORMS"
-        subtitle="National Legislation & Strategic Bills"
-        badgeText="Policies"
+        title="Policies"
+        subtitle="Shape the future of India"
+        badgeText="National Directives"
       />
 
-      {/* Module Placeholder Cards Stack */}
-      <div className="flex flex-col gap-2.5">
-        <ModulePlaceholderCard
-          icon={<Coins className="w-5 h-5" />}
-          title="Economy & Tax Reforms"
-          description="Fiscal restructuring, GST calibration, and corporate tax incentives."
-          onClick={() => setActiveModule('Economy & Tax Reforms')}
-        />
-
-        <ModulePlaceholderCard
-          icon={<Sprout className="w-5 h-5 text-emerald" />}
-          title="Agriculture & Farmers Welfare"
-          description="MSP regulation, irrigation infrastructure, and farm credit subsidies."
-          onClick={() => setActiveModule('Agriculture & Farmers Welfare')}
-        />
-
-        <ModulePlaceholderCard
-          icon={<GraduationCap className="w-5 h-5 text-cyan-400" />}
-          title="Education & Digital India"
-          description="NEP expansion, AI research grants, and digital skill universities."
-          onClick={() => setActiveModule('Education & Digital India')}
-        />
-
-        <ModulePlaceholderCard
-          icon={<HeartPulse className="w-5 h-5 text-crimson" />}
-          title="Healthcare & Social Safety"
-          description="Ayushman universal insurance, wellness clinics, and pension safety nets."
-          onClick={() => setActiveModule('Healthcare & Social Safety')}
-        />
-
-        <ModulePlaceholderCard
-          icon={<Scale className="w-5 h-5 text-gold" />}
-          title="National Budget Allocation"
-          description="Annual budget splits between defense, infrastructure, and social sector."
-          onClick={() => setActiveModule('National Budget Allocation')}
-        />
+      {/* Category Filter Chips (Horizontal Scrollable Strip) */}
+      <div className="w-full overflow-x-auto no-scrollbar py-1 flex items-center gap-1.5 shrink-0">
+        {CATEGORIES.map((cat) => {
+          const isSelected = selectedCategory === cat;
+          return (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={cn(
+                'px-3 py-1.5 rounded-full text-xs font-sans font-bold whitespace-nowrap transition-all border shrink-0',
+                isSelected
+                  ? 'bg-gold text-navy-dark border-gold shadow-gold-glow'
+                  : 'bg-navy-surface text-slate-300 border-gold/15 hover:border-gold/40'
+              )}
+            >
+              {cat}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Interactive Bottom Sheet Popup */}
-      <BottomSheet
-        isOpen={!!activeModule}
-        onClose={() => setActiveModule(null)}
-        title={activeModule ? activeModule.toUpperCase() : ''}
-      >
-        <div className="flex flex-col gap-3 py-2 text-center">
-          <p className="text-xs text-slate-300 font-sans">
-            Policy reform engine for <span className="text-gold font-bold">{activeModule}</span> will be connected in future simulation sprints.
-          </p>
-          <div className="pt-2 border-t border-gold/15 flex justify-end">
-            <Button variant="primary" size="sm" onClick={() => setActiveModule(null)}>
-              Close Panel
-            </Button>
-          </div>
+      {/* Policy Cards List or Empty State */}
+      {filteredPolicies.length > 0 ? (
+        <div className="flex flex-col gap-3">
+          {filteredPolicies.map((policy) => (
+            <PolicyCard
+              key={policy.id}
+              policy={policy}
+              onOpenPolicy={handleOpenPolicy}
+            />
+          ))}
         </div>
-      </BottomSheet>
+      ) : (
+        <EmptyState
+          title="No policies available"
+          description="Check back later."
+        />
+      )}
     </motion.div>
   );
 }
