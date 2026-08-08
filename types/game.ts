@@ -1,3 +1,5 @@
+import { CabinetState } from './cabinet';
+
 /**
  * Core Game Architecture Types & Centralized Game State Definition
  */
@@ -42,6 +44,7 @@ export interface GameState {
   population: PopulationState;
   election: ElectionState;
   player: PlayerState;
+  cabinet: CabinetState;
   lastSavedAt: string | null;
   version: string;
 }

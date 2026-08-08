@@ -1,8 +1,11 @@
 import { create } from 'zustand';
 import { GameState } from '@/types/game';
 import { Decision, DecisionResult, DecisionOption } from '@/types/decision';
+import { Candidate, MinistryType } from '@/types/cabinet';
 import { ASSAM_FLOOD_DECISION } from '@/constants/decisions';
+import { INITIAL_CABINET_STATE } from '@/constants/candidates';
 import { applyDecision } from '@/engine/decisionEngine';
+import { appointMinister, removeMinister, updateMinisterRelationship } from '@/engine/cabinetEngine';
 import { saveGameState, loadGameState, clearGameState, CURRENT_GAME_VERSION } from '@/engine/persistence';
 
 export const INITIAL_GAME_STATE: GameState = {
@@ -33,6 +36,7 @@ export const INITIAL_GAME_STATE: GameState = {
     title: 'Prime Minister of India',
     party: 'Bharat Vikas Party',
   },
+  cabinet: INITIAL_CABINET_STATE,
   lastSavedAt: null,
   version: CURRENT_GAME_VERSION,
 };
@@ -48,6 +52,9 @@ interface GameStoreState {
   setActiveDecision: (decision: Decision) => void;
   executeDecision: (optionId: string) => DecisionResult | null;
   executeDecisionByOption: (option: DecisionOption) => DecisionResult;
+  appointMinisterAction: (candidate: Candidate) => void;
+  removeMinisterAction: (ministry: MinistryType) => void;
+  updateRelationshipAction: (ministry: MinistryType, delta: number) => { resignationEvent: boolean; resignedMinisterName?: string };
   resetGame: () => void;
 }
 
@@ -61,7 +68,7 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
     if (get().isInitialized) return;
 
     const savedState = loadGameState();
-    if (savedState) {
+    if (savedState && savedState.cabinet) {
       set({ gameState: savedState, isInitialized: true });
     } else {
       set({ gameState: INITIAL_GAME_STATE, isInitialized: true });
@@ -102,6 +109,52 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
     });
 
     return result;
+  },
+
+  appointMinisterAction: (candidate: Candidate) => {
+    const { gameState } = get();
+    const updatedCabinet = appointMinister(gameState.cabinet, candidate);
+    const updatedState: GameState = {
+      ...gameState,
+      cabinet: updatedCabinet,
+      lastSavedAt: new Date().toISOString(),
+    };
+
+    saveGameState(updatedState);
+    set({ gameState: updatedState });
+  },
+
+  removeMinisterAction: (ministry: MinistryType) => {
+    const { gameState } = get();
+    const updatedCabinet = removeMinister(gameState.cabinet, ministry);
+    const updatedState: GameState = {
+      ...gameState,
+      cabinet: updatedCabinet,
+      lastSavedAt: new Date().toISOString(),
+    };
+
+    saveGameState(updatedState);
+    set({ gameState: updatedState });
+  },
+
+  updateRelationshipAction: (ministry: MinistryType, delta: number) => {
+    const { gameState } = get();
+    const { updatedCabinet, resignationEvent, resignedMinisterName } = updateMinisterRelationship(
+      gameState.cabinet,
+      ministry,
+      delta
+    );
+
+    const updatedState: GameState = {
+      ...gameState,
+      cabinet: updatedCabinet,
+      lastSavedAt: new Date().toISOString(),
+    };
+
+    saveGameState(updatedState);
+    set({ gameState: updatedState });
+
+    return { resignationEvent, resignedMinisterName };
   },
 
   resetGame: () => {
