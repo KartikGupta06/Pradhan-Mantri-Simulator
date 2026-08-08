@@ -4,6 +4,7 @@ export * from './persistence';
 export * from './cabinetEngine';
 export * from './newsEngine';
 export * from './eventEngine';
+export * from './economyEngine';
 
 export interface EngineModule {
   name: string;
@@ -12,5 +13,5 @@ export interface EngineModule {
 
 export const ENGINE_METADATA: EngineModule = {
   name: 'Pradhan Mantri Simulation Engine',
-  version: '0.8.0',
+  version: '0.9.0',
 };

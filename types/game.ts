@@ -1,6 +1,7 @@
 import { CabinetState } from './cabinet';
 import { NewsItem } from './news';
 import { GameEvent } from './event';
+import { DerivedEconomyMetrics, EconomicSnapshot } from './economy';
 
 /**
  * Core Game Architecture Types & Centralized Game State Definition
@@ -50,6 +51,8 @@ export interface GameState {
   news: NewsItem[];
   activeEvent: GameEvent | null;
   recentEvents: string[];
+  derivedEconomy: DerivedEconomyMetrics;
+  economicHistory: EconomicSnapshot[];
   lastSavedAt: string | null;
   version: string;
 }

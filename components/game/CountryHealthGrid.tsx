@@ -19,6 +19,7 @@ export const CountryHealthGrid: React.FC<CountryHealthGridProps> = ({
   const { treasury, gdp } = gameState.economy;
   const { popularity } = gameState.publicOpinion;
   const { yearsRemaining } = gameState.election;
+  const { economicStatus, treasuryStatus, economicHealth } = gameState.derivedEconomy;
 
   const popularitySubtitle =
     popularity >= 70 ? 'Very Good' : popularity >= 50 ? 'Moderate' : 'Critical';
@@ -28,7 +29,7 @@ export const CountryHealthGrid: React.FC<CountryHealthGridProps> = ({
       {/* Popularity Card */}
       <StatCard
         title="POPULARITY"
-        value={`${popularity}%`}
+        value={`${Math.round(popularity)}%`}
         subtitle={popularitySubtitle}
         percentage={popularity}
         ringVariant={popularity >= 60 ? 'emerald' : popularity >= 40 ? 'gold' : 'crimson'}
@@ -40,9 +41,9 @@ export const CountryHealthGrid: React.FC<CountryHealthGridProps> = ({
       <StatCard
         title="TREASURY"
         value={`₹ ${treasury.toLocaleString('en-IN')} Cr`}
-        subtitle="Healthy"
+        subtitle={treasuryStatus}
         percentage={Math.min(100, Math.max(10, Math.round((treasury / 25000) * 100)))}
-        ringVariant="gold"
+        ringVariant={treasuryStatus === 'Healthy' ? 'gold' : treasuryStatus === 'Warning' ? 'gold' : 'crimson'}
         icon={<Coins className="w-3.5 h-3.5 text-gold" />}
         onViewDetails={() => onCardClick?.('treasury')}
       />
@@ -51,8 +52,8 @@ export const CountryHealthGrid: React.FC<CountryHealthGridProps> = ({
       <StatCard
         title="ECONOMY"
         value={`₹ ${gdp.toFixed(2)} T`}
-        subtitle="Growing"
-        percentage={70}
+        subtitle={economicStatus}
+        percentage={economicHealth}
         ringVariant="cyan"
         icon={<TrendingUp className="w-3.5 h-3.5 text-cyan-400" />}
         onViewDetails={() => onCardClick?.('economy')}

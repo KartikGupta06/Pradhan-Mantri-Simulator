@@ -12,6 +12,7 @@ import { PrimaryActionBar } from '@/components/game/PrimaryActionBar';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Button } from '@/components/ui/Button';
 import { DecisionFlowContainer } from '@/components/game/decision/DecisionFlowContainer';
+import { EconomyScreen } from '@/components/game/economy/EconomyScreen';
 import { useGameStore } from '@/game/store/useGameStore';
 import { RefreshCw } from 'lucide-react';
 
@@ -24,6 +25,15 @@ export const HomeScreen: React.FC = () => {
     return (
       <div className="w-full flex-1 flex flex-col p-2 sm:p-2.5">
         <DecisionFlowContainer onCompleteFlow={() => setActiveModal(null)} />
+      </div>
+    );
+  }
+
+  // If Economy or Treasury or Popularity stat card clicked, render full Economy Screen
+  if (activeModal === 'economy' || activeModal === 'treasury' || activeModal === 'popularity') {
+    return (
+      <div className="w-full flex-1 flex flex-col p-2 sm:p-2.5 overflow-y-auto">
+        <EconomyScreen onClose={() => setActiveModal(null)} />
       </div>
     );
   }
@@ -72,7 +82,7 @@ export const HomeScreen: React.FC = () => {
 
       {/* Interactive Bottom Sheet Popup Shell for UI Feedback & Dev Settings */}
       <BottomSheet
-        isOpen={!!activeModal && activeModal !== 'decision'}
+        isOpen={!!activeModal && activeModal !== 'decision' && activeModal !== 'economy' && activeModal !== 'treasury' && activeModal !== 'popularity'}
         onClose={() => setActiveModal(null)}
         title={activeModal ? activeModal.toUpperCase() + ' DETAILS' : ''}
       >
