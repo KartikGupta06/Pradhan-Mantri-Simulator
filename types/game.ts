@@ -2,6 +2,8 @@ import { CabinetState } from './cabinet';
 import { NewsItem } from './news';
 import { GameEvent } from './event';
 import { DerivedEconomyMetrics, EconomicSnapshot } from './economy';
+import { PublicOpinionState } from './publicOpinion';
+import { ElectionState } from './election';
 
 /**
  * Core Game Architecture Types & Centralized Game State Definition
@@ -21,17 +23,8 @@ export interface EconomyState {
   unemployment: number; // In Percent (e.g. 6.2)
 }
 
-export interface PublicOpinionState {
-  popularity: number; // In Percent 0-100 (e.g. 76)
-}
-
 export interface PopulationState {
   total: number; // In Billions (e.g. 1.45)
-}
-
-export interface ElectionState {
-  yearsRemaining: number; // (e.g. 2)
-  termTotalYears: number; // 5
 }
 
 export interface PlayerState {

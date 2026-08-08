@@ -1,12 +1,14 @@
 import { GameState } from '@/types/game';
 import { Decision, DecisionOption, DecisionResult, StatDiff } from '@/types/decision';
 import { advanceTime } from './timeUtils';
-import { applyWeeklyPassiveEconomyUpdate, calculateDerivedMetrics, createEconomicSnapshot } from './economyEngine';
+import { applyWeeklyPassiveEconomyUpdate } from './economyEngine';
+import { applyDirectVoterEffects, applyIndirectOpinionModifiers } from './publicOpinionEngine';
+import { updateElectionCountdown } from './electionEngine';
 
 /**
  * Applies a selected decision option to the game state,
- * validates boundaries, advances time by one week, applies weekly baseline economic updates,
- * recalculates derived economic metrics, and generates the result object.
+ * updates economic metrics, voter group opinions, election countdown,
+ * and generates the result object.
  */
 export function applyDecision(
   currentState: GameState,
@@ -26,18 +28,22 @@ export function applyDecision(
   let newGdp = prevGdp + (effects.gdp ?? 0);
   let newInflation = prevInflation + (effects.inflation ?? 0);
   let newUnemployment = prevUnemployment + (effects.unemployment ?? 0);
-  let newPopularity = prevPopularity + (effects.popularity ?? 0);
 
-  // 2. Validate state & prevent invalid/impossible values
+  // Validate state
   newTreasury = isNaN(newTreasury) ? prevTreasury : Math.round(newTreasury);
   newGdp = isNaN(newGdp) ? prevGdp : Math.max(10, Number(newGdp.toFixed(2)));
   newInflation = isNaN(newInflation) ? prevInflation : Number(Math.max(0.1, newInflation).toFixed(1));
   newUnemployment = isNaN(newUnemployment)
     ? prevUnemployment
     : Number(Math.max(0.1, newUnemployment).toFixed(1));
-  newPopularity = isNaN(newPopularity)
-    ? prevPopularity
-    : Math.max(0, Math.min(100, Math.round(newPopularity)));
+
+  // 2. Apply Direct & Indirect Voter Group Effects
+  const opinionAfterDirect = applyDirectVoterEffects(currentState.publicOpinion, effects);
+  const opinionAfterIndirect = applyIndirectOpinionModifiers(
+    opinionAfterDirect,
+    { treasury: newTreasury, gdp: newGdp, inflation: newInflation, unemployment: newUnemployment },
+    currentState.derivedEconomy.gdpGrowth
+  );
 
   // 3. Advance time by ONE WEEK
   const newTime = advanceTime(currentState.time);
@@ -52,15 +58,21 @@ export function applyDecision(
       inflation: newInflation,
       unemployment: newUnemployment,
     },
-    publicOpinion: {
-      popularity: newPopularity,
-    },
+    publicOpinion: opinionAfterIndirect,
   };
 
-  // 5. Apply subtle passive weekly economic updates & recalculate derived metrics
-  const updatedState = applyWeeklyPassiveEconomyUpdate(interimState);
+  // 5. Apply subtle passive weekly economic updates & derived metric calculations
+  const stateAfterEconomy = applyWeeklyPassiveEconomyUpdate(interimState);
 
-  // 6. Generate Stat Changes array for Result Screen
+  // 6. Update Election Countdown
+  const updatedElection = updateElectionCountdown(newTime, currentState.election);
+
+  const updatedState: GameState = {
+    ...stateAfterEconomy,
+    election: updatedElection,
+  };
+
+  // 7. Generate Stat Changes array for Result Screen
   const statChanges: StatDiff[] = [];
 
   // Treasury
@@ -119,24 +131,26 @@ export function applyDecision(
     isPositiveGood: false,
   });
 
-  // Unemployment (if changed)
-  const unemploymentDelta = Number((updatedState.economy.unemployment - prevUnemployment).toFixed(1));
-  if (unemploymentDelta !== 0) {
+  // Farmers (if modified)
+  if (effects.farmers) {
+    const prevF = currentState.publicOpinion.farmers.approval;
+    const newF = updatedState.publicOpinion.farmers.approval;
+    const fDelta = Number((newF - prevF).toFixed(1));
     statChanges.push({
-      statKey: 'unemployment',
-      label: 'Unemployment',
-      previousValue: prevUnemployment,
-      newValue: updatedState.economy.unemployment,
-      delta: unemploymentDelta,
-      formattedPrevious: `${prevUnemployment.toFixed(1)}%`,
-      formattedNew: `${updatedState.economy.unemployment.toFixed(1)}%`,
-      formattedDelta: `${unemploymentDelta >= 0 ? '+' : ''}${unemploymentDelta.toFixed(1)}%`,
-      isPositiveGood: false,
+      statKey: 'farmers',
+      label: 'Farmers Approval',
+      previousValue: prevF,
+      newValue: newF,
+      delta: fDelta,
+      formattedPrevious: `${prevF}%`,
+      formattedNew: `${newF}%`,
+      formattedDelta: `${fDelta >= 0 ? '+' : ''}${fDelta}%`,
+      isPositiveGood: true,
     });
   }
 
-  // 7. Summary generation
-  const summary = `Executive Directive enacted for "${decision.title}". Action "${selectedOption.title}" implemented across key ministries. Economic Health updated to ${updatedState.derivedEconomy.economicHealth}/100 (${updatedState.derivedEconomy.economicStatus}). Time advanced to ${newTime.month}, Week ${newTime.week}, ${newTime.year}.`;
+  // Summary generation
+  const summary = `Executive Directive enacted for "${decision.title}". Action "${selectedOption.title}" implemented across key ministries. Overall Public Approval rating updated to ${updatedState.publicOpinion.popularity}%. Time advanced to ${newTime.month}, Week ${newTime.week}, ${newTime.year}.`;
 
   const result: DecisionResult = {
     decisionId: decision.id,

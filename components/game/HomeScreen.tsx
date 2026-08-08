@@ -13,12 +13,24 @@ import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Button } from '@/components/ui/Button';
 import { DecisionFlowContainer } from '@/components/game/decision/DecisionFlowContainer';
 import { EconomyScreen } from '@/components/game/economy/EconomyScreen';
+import { PublicOpinionScreen } from '@/components/game/opinion/PublicOpinionScreen';
+import { ElectionFlowContainer } from '@/components/game/election/ElectionFlowContainer';
 import { useGameStore } from '@/game/store/useGameStore';
 import { RefreshCw } from 'lucide-react';
 
 export const HomeScreen: React.FC = () => {
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const resetGame = useGameStore((state) => state.resetGame);
+  const inElectionFlow = useGameStore((state) => state.gameState.election?.inElectionFlow);
+
+  // If 5-Year Term ended or Election flow triggered, render full Election Experience
+  if (inElectionFlow) {
+    return (
+      <div className="w-full flex-1 flex flex-col p-2 sm:p-2.5 overflow-y-auto">
+        <ElectionFlowContainer onCompleteFlow={() => setActiveModal(null)} />
+      </div>
+    );
+  }
 
   // If Decision Flow active, render full decision flow experience
   if (activeModal === 'decision') {
@@ -29,11 +41,20 @@ export const HomeScreen: React.FC = () => {
     );
   }
 
-  // If Economy or Treasury or Popularity stat card clicked, render full Economy Screen
-  if (activeModal === 'economy' || activeModal === 'treasury' || activeModal === 'popularity') {
+  // If Economy or Treasury stat card clicked, render full Economy Screen
+  if (activeModal === 'economy' || activeModal === 'treasury') {
     return (
       <div className="w-full flex-1 flex flex-col p-2 sm:p-2.5 overflow-y-auto">
         <EconomyScreen onClose={() => setActiveModal(null)} />
+      </div>
+    );
+  }
+
+  // If Objectives, Popularity, or Opinion clicked, render full Public Opinion Screen
+  if (activeModal === 'objectives' || activeModal === 'popularity' || activeModal === 'opinion') {
+    return (
+      <div className="w-full flex-1 flex flex-col p-2 sm:p-2.5 overflow-y-auto">
+        <PublicOpinionScreen onClose={() => setActiveModal(null)} />
       </div>
     );
   }
@@ -73,7 +94,7 @@ export const HomeScreen: React.FC = () => {
       {/* 5. Country Health Cards (4-Column Compact Single Row) */}
       <CountryHealthGrid onCardClick={(metric) => setActiveModal(metric)} />
 
-      {/* 6. Primary Action Bar (Achievements, Dominant TAKE DECISION CTA, Objectives) */}
+      {/* 6. Primary Action Bar (Achievements, Dominant TAKE DECISION CTA, Objectives/Opinion) */}
       <PrimaryActionBar
         onTakeDecisionClick={() => setActiveModal('decision')}
         onAchievementsClick={() => setActiveModal('achievements')}
@@ -82,7 +103,15 @@ export const HomeScreen: React.FC = () => {
 
       {/* Interactive Bottom Sheet Popup Shell for UI Feedback & Dev Settings */}
       <BottomSheet
-        isOpen={!!activeModal && activeModal !== 'decision' && activeModal !== 'economy' && activeModal !== 'treasury' && activeModal !== 'popularity'}
+        isOpen={
+          !!activeModal &&
+          activeModal !== 'decision' &&
+          activeModal !== 'economy' &&
+          activeModal !== 'treasury' &&
+          activeModal !== 'popularity' &&
+          activeModal !== 'objectives' &&
+          activeModal !== 'opinion'
+        }
         onClose={() => setActiveModal(null)}
         title={activeModal ? activeModal.toUpperCase() + ' DETAILS' : ''}
       >

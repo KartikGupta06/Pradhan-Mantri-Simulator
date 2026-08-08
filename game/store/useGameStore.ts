@@ -4,6 +4,7 @@ import { Decision, DecisionResult, DecisionOption } from '@/types/decision';
 import { Candidate, MinistryType } from '@/types/cabinet';
 import { NewsItem } from '@/types/news';
 import { GameEvent } from '@/types/event';
+import { CampaignFocus, ElectionResultData } from '@/types/election';
 import { ASSAM_FLOOD_DECISION } from '@/constants/decisions';
 import { INITIAL_CABINET_STATE } from '@/constants/candidates';
 import { INITIAL_NEWS_ITEMS } from '@/constants/newsTemplates';
@@ -12,6 +13,8 @@ import { appointMinister, removeMinister, updateMinisterRelationship } from '@/e
 import { generateNewsFromDecision, generateNewsFromEvent, generateNewsFromCabinet, addNewsToHistory } from '@/engine/newsEngine';
 import { evaluateRandomEvent, recordEventTrigger } from '@/engine/eventEngine';
 import { calculateDerivedMetrics, createEconomicSnapshot } from '@/engine/economyEngine';
+import { INITIAL_PUBLIC_OPINION } from '@/engine/publicOpinionEngine';
+import { INITIAL_ELECTION_STATE, applyCampaignFocus, calculateElectionResult, startNewTerm } from '@/engine/electionEngine';
 import { saveGameState, loadGameState, clearGameState, CURRENT_GAME_VERSION } from '@/engine/persistence';
 
 const initialEconomyState = {
@@ -28,11 +31,11 @@ const initialTime = {
   week: 2,
 };
 
-const initialDerived = calculateDerivedMetrics(initialEconomyState, 76, []);
+const initialDerived = calculateDerivedMetrics(initialEconomyState, INITIAL_PUBLIC_OPINION.popularity, []);
 const initialSnapshot = createEconomicSnapshot(
   initialTime,
   initialEconomyState,
-  76,
+  INITIAL_PUBLIC_OPINION.popularity,
   initialDerived.gdpGrowth,
   initialDerived.economicHealth
 );
@@ -40,16 +43,11 @@ const initialSnapshot = createEconomicSnapshot(
 export const INITIAL_GAME_STATE: GameState = {
   time: initialTime,
   economy: initialEconomyState,
-  publicOpinion: {
-    popularity: 76,
-  },
+  publicOpinion: INITIAL_PUBLIC_OPINION,
   population: {
     total: 1.45,
   },
-  election: {
-    yearsRemaining: 2,
-    termTotalYears: 5,
-  },
+  election: INITIAL_ELECTION_STATE,
   player: {
     name: 'KARTIK GUPTA',
     title: 'Prime Minister of India',
@@ -83,6 +81,9 @@ interface GameStoreState {
   triggerRandomEventAction: (forceEventId?: string) => GameEvent | null;
   resolveActiveEventAction: (option: DecisionOption) => DecisionResult | null;
   dismissActiveEventAction: () => void;
+  triggerElectionFlowDevAction: () => void;
+  selectCampaignFocusAction: (focus: CampaignFocus) => ElectionResultData;
+  startNewTermAction: () => void;
   resetGame: () => void;
 }
 
@@ -96,7 +97,7 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
     if (get().isInitialized) return;
 
     const savedState = loadGameState();
-    if (savedState && savedState.derivedEconomy) {
+    if (savedState && savedState.publicOpinion && savedState.election) {
       set({ gameState: savedState, isInitialized: true });
     } else {
       set({ gameState: INITIAL_GAME_STATE, isInitialized: true });
@@ -118,14 +119,14 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
   executeDecisionByOption: (option: DecisionOption) => {
     const { gameState, activeDecision } = get();
 
-    // 1. Run Part 5 Decision Engine (includes derived economy recalculations & passive weekly updates)
+    // 1. Run Part 5 Decision Engine (includes public opinion & election countdown)
     const { updatedState: baseUpdatedState, result } = applyDecision(gameState, activeDecision, option);
 
     // 2. Generate Handcrafted News item from decision
     const newsItem = generateNewsFromDecision(activeDecision, option, result, baseUpdatedState.time);
     const updatedNews = addNewsToHistory(gameState.news || [], newsItem);
 
-    // 3. Evaluate Random Event trigger (15% probability with 5-event anti-repetition memory)
+    // 3. Evaluate Random Event trigger
     const triggeredEvent = evaluateRandomEvent(gameState.recentEvents || []);
     let updatedRecentEvents = gameState.recentEvents || [];
     if (triggeredEvent) {
@@ -247,7 +248,6 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
     const event = gameState.activeEvent;
     if (!event) return null;
 
-    // Convert GameEvent to Decision format for Decision Engine
     const eventAsDecision: Decision = {
       id: event.id,
       title: event.title,
@@ -259,10 +259,7 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
       options: event.options,
     };
 
-    // 1. Run Part 5 Decision Engine (includes derived economy recalculations)
     const { updatedState: baseUpdatedState, result } = applyDecision(gameState, eventAsDecision, option);
-
-    // 2. Generate Handcrafted News item from event resolution
     const newsItem = generateNewsFromEvent(event, option, result, baseUpdatedState.time);
     const updatedNews = addNewsToHistory(gameState.news || [], newsItem);
 
@@ -287,6 +284,74 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
     const updatedState: GameState = { ...gameState, activeEvent: null };
     saveGameState(updatedState);
     set({ gameState: updatedState });
+  },
+
+  triggerElectionFlowDevAction: () => {
+    const { gameState } = get();
+    const updatedElection = {
+      ...gameState.election,
+      weeksRemaining: 0,
+      yearsRemaining: 0,
+      inElectionFlow: true,
+    };
+    const updatedState: GameState = { ...gameState, election: updatedElection };
+    saveGameState(updatedState);
+    set({ gameState: updatedState });
+  },
+
+  selectCampaignFocusAction: (focus: CampaignFocus) => {
+    const { gameState } = get();
+
+    // 1. Apply campaign focus boost to voter groups
+    const updatedOpinion = applyCampaignFocus(gameState.publicOpinion, focus);
+
+    // 2. Calculate election outcome with controlled uncertainty (±5%)
+    const electionResult = calculateElectionResult(updatedOpinion.popularity, focus);
+
+    // 3. Generate Handcrafted News dispatch for election result
+    const newsHeadline = electionResult.victory
+      ? `Government Secures Second Term in General Election`
+      : `Opposition Coalition Wins General Election; Government Steps Down`;
+    const newsSummary = electionResult.summary;
+
+    const electionNews: NewsItem = {
+      id: `news_election_${Date.now()}`,
+      headline: newsHeadline,
+      summary: newsSummary,
+      category: 'Politics',
+      timestamp: `${gameState.time.month}, Week ${gameState.time.week}, ${gameState.time.year}`,
+      importance: 'Breaking',
+      sentiment: electionResult.victory ? 'Positive' : 'Negative',
+    };
+
+    const updatedNews = addNewsToHistory(gameState.news || [], electionNews);
+
+    const updatedElection = {
+      ...gameState.election,
+      selectedCampaignFocus: focus,
+      lastElectionResult: electionResult,
+      inElectionFlow: true,
+    };
+
+    const updatedState: GameState = {
+      ...gameState,
+      publicOpinion: updatedOpinion,
+      election: updatedElection,
+      news: updatedNews,
+    };
+
+    saveGameState(updatedState);
+    set({ gameState: updatedState });
+
+    return electionResult;
+  },
+
+  startNewTermAction: () => {
+    const { gameState } = get();
+    const newTermState = startNewTerm(gameState);
+
+    saveGameState(newTermState);
+    set({ gameState: newTermState });
   },
 
   resetGame: () => {
