@@ -21,9 +21,11 @@ export const EmergencyBanner: React.FC<EmergencyBannerProps> = ({
   className,
 }) => {
   const activeDecision = useGameStore((state) => state.activeDecision);
+  const activeEvent = useGameStore((state) => state.gameState.activeEvent);
 
-  const title = propTitle ?? activeDecision.title;
-  const description = propDescription ?? activeDecision.description;
+  const title = propTitle ?? (activeEvent ? activeEvent.title : activeDecision.title);
+  const description = propDescription ?? (activeEvent ? activeEvent.description : activeDecision.description);
+  const badgeLabel = activeEvent ? `${activeEvent.category.toUpperCase()} ALERT` : 'CURRENT CRISIS';
 
   return (
     <div
@@ -41,7 +43,7 @@ export const EmergencyBanner: React.FC<EmergencyBannerProps> = ({
         <div className="flex flex-col text-left">
           <div className="flex items-center gap-2">
             <span className="font-heading text-xs font-bold text-crimson uppercase tracking-wider">
-              CURRENT CRISIS
+              {badgeLabel}
             </span>
             {urgentCount > 0 && (
               <span className="text-[10px] font-mono font-bold text-slate-300">

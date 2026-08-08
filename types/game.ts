@@ -1,4 +1,6 @@
 import { CabinetState } from './cabinet';
+import { NewsItem } from './news';
+import { GameEvent } from './event';
 
 /**
  * Core Game Architecture Types & Centralized Game State Definition
@@ -45,6 +47,9 @@ export interface GameState {
   election: ElectionState;
   player: PlayerState;
   cabinet: CabinetState;
+  news: NewsItem[];
+  activeEvent: GameEvent | null;
+  recentEvents: string[];
   lastSavedAt: string | null;
   version: string;
 }
