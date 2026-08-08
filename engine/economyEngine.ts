@@ -219,6 +219,7 @@ export function applyWeeklyPassiveEconomyUpdate(gameState: GameState): GameState
     ...gameState,
     economy: updatedEconomy,
     publicOpinion: {
+      ...gameState.publicOpinion,
       popularity: newPopularity,
     },
     derivedEconomy: newDerived,
