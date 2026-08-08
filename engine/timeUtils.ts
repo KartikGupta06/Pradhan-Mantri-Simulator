@@ -1,4 +1,6 @@
-import { GameTime, ElectionState } from '@/types/game';
+import { GameTime } from '@/types/game';
+import { ElectionState } from '@/types/election';
+import { updateElectionCountdown } from './electionEngine';
 
 export const MONTHS = [
   'January',
@@ -43,19 +45,10 @@ export function advanceTime(currentTime: GameTime): GameTime {
 
 /**
  * Derives election time remaining from current game time.
- * Term starts May 2029 (Week 2). First term ends May 2034.
  */
 export function calculateElectionRemaining(
   currentTime: GameTime,
-  initialElectionYears: number = 2
+  electionState?: ElectionState
 ): ElectionState {
-  // Simple calculation: 2031 is 2 years from 2029 start.
-  // We can calculate remaining years dynamically if needed.
-  const targetYear = currentTime.year + initialElectionYears;
-  const remainingYears = Math.max(0, targetYear - currentTime.year);
-
-  return {
-    yearsRemaining: remainingYears,
-    termTotalYears: 5,
-  };
+  return updateElectionCountdown(currentTime, electionState);
 }
