@@ -4,6 +4,7 @@ import React from 'react';
 import { StatCard } from '@/components/ui/StatCard';
 import { Heart, Coins, TrendingUp, Vote } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useGameStore } from '@/game/store/useGameStore';
 
 interface CountryHealthGridProps {
   onCardClick?: (metric: string) => void;
@@ -14,15 +15,23 @@ export const CountryHealthGrid: React.FC<CountryHealthGridProps> = ({
   onCardClick,
   className,
 }) => {
+  const gameState = useGameStore((state) => state.gameState);
+  const { treasury, gdp } = gameState.economy;
+  const { popularity } = gameState.publicOpinion;
+  const { yearsRemaining } = gameState.election;
+
+  const popularitySubtitle =
+    popularity >= 70 ? 'Very Good' : popularity >= 50 ? 'Moderate' : 'Critical';
+
   return (
     <div className={cn('grid grid-cols-4 gap-1.5 w-full shrink-0', className)}>
       {/* Popularity Card */}
       <StatCard
         title="POPULARITY"
-        value="76%"
-        subtitle="Very Good"
-        percentage={76}
-        ringVariant="emerald"
+        value={`${popularity}%`}
+        subtitle={popularitySubtitle}
+        percentage={popularity}
+        ringVariant={popularity >= 60 ? 'emerald' : popularity >= 40 ? 'gold' : 'crimson'}
         icon={<Heart className="w-3.5 h-3.5 text-emerald" />}
         onViewDetails={() => onCardClick?.('popularity')}
       />
@@ -30,9 +39,9 @@ export const CountryHealthGrid: React.FC<CountryHealthGridProps> = ({
       {/* Treasury Card */}
       <StatCard
         title="TREASURY"
-        value="₹ 18,450 Cr"
+        value={`₹ ${treasury.toLocaleString('en-IN')} Cr`}
         subtitle="Healthy"
-        percentage={82}
+        percentage={Math.min(100, Math.max(10, Math.round((treasury / 25000) * 100)))}
         ringVariant="gold"
         icon={<Coins className="w-3.5 h-3.5 text-gold" />}
         onViewDetails={() => onCardClick?.('treasury')}
@@ -41,7 +50,7 @@ export const CountryHealthGrid: React.FC<CountryHealthGridProps> = ({
       {/* Economy Card */}
       <StatCard
         title="ECONOMY"
-        value="₹ 320.45 T"
+        value={`₹ ${gdp.toFixed(2)} T`}
         subtitle="Growing"
         percentage={70}
         ringVariant="cyan"
@@ -52,7 +61,7 @@ export const CountryHealthGrid: React.FC<CountryHealthGridProps> = ({
       {/* Election Card */}
       <StatCard
         title="ELECTION"
-        value="2 Years"
+        value={`${yearsRemaining} Years`}
         subtitle="Time Left"
         percentage={40}
         ringVariant="gold"

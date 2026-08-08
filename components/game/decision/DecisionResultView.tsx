@@ -7,21 +7,30 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { TrendIndicator } from '@/components/ui/TrendIndicator';
-import { PolicyOption } from './DecisionDetailsView';
-import { CheckCircle2, Newspaper, Home, Award } from 'lucide-react';
+import { DecisionResult } from '@/types/decision';
+import { CheckCircle2, Newspaper, Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useGameStore } from '@/game/store/useGameStore';
 
 interface DecisionResultViewProps {
-  option: PolicyOption | null;
+  result?: DecisionResult | null;
   onReturnHome: () => void;
   className?: string;
 }
 
 export const DecisionResultView: React.FC<DecisionResultViewProps> = ({
-  option,
+  result: propResult,
   onReturnHome,
   className,
 }) => {
+  const storeResult = useGameStore((state) => state.latestResult);
+  const result = propResult || storeResult;
+
+  const decisionTitle = result?.decisionTitle || 'Flood in Assam';
+  const optionTitle = result?.selectedOptionTitle || 'Emergency Relief Package';
+  const optionDescription = result?.selectedOptionDescription || 'Immediate crisis response deployed.';
+  const statChanges = result?.statChanges || [];
+
   return (
     <motion.div
       {...pageTransition}
@@ -32,23 +41,23 @@ export const DecisionResultView: React.FC<DecisionResultViewProps> = ({
         <div className="w-16 h-16 rounded-full bg-emerald/20 border-2 border-emerald flex items-center justify-center text-emerald shadow-emerald-glow">
           <CheckCircle2 className="w-10 h-10 animate-bounce" />
         </div>
-        <Badge variant="emerald">POLICY BILL PASSED</Badge>
+        <Badge variant="emerald">EXECUTIVE DIRECTIVE ENACTED</Badge>
         <h1 className="font-heading text-xl sm:text-2xl font-extrabold gold-gradient-text uppercase tracking-wide">
-          DECISION ACCEPTED & ENACTED
+          {decisionTitle}
         </h1>
         <p className="text-xs text-slate-300 font-sans max-w-[280px]">
-          The Cabinet has formally passed the executive directive into national law.
+          The Prime Minister&apos;s office has issued the executive directive into national implementation.
         </p>
       </motion.div>
 
       {/* Enacted Policy Summary Card */}
       <Card variant="gold" className="flex flex-col gap-2 p-3.5 text-left border-gold/40">
-        <span className="text-[9px] font-mono uppercase text-gold">ENACTED POLICY</span>
+        <span className="text-[9px] font-mono uppercase text-gold">ENACTED OPTION</span>
         <h3 className="font-sans text-sm font-bold text-slate-100">
-          {option?.title || 'Targeted Direct Benefit Transfer (DBT)'}
+          {optionTitle}
         </h3>
         <p className="text-xs text-slate-300 font-sans leading-relaxed">
-          {option?.description || 'Direct financial assistance transferred to small farmers across 14 states.'}
+          {optionDescription}
         </p>
       </Card>
 
@@ -58,22 +67,20 @@ export const DecisionResultView: React.FC<DecisionResultViewProps> = ({
           IMMEDIATE NATIONAL IMPACT RECAP
         </span>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          <Card variant="glass" className="flex flex-col p-2 text-center border-gold/15">
-            <span className="text-[9px] font-mono text-slate-400 uppercase">POPULARITY</span>
-            <TrendIndicator value="+5%" trend="up" isPositiveGood className="justify-center mt-1 text-sm font-bold" />
-          </Card>
-          <Card variant="glass" className="flex flex-col p-2 text-center border-gold/15">
-            <span className="text-[9px] font-mono text-slate-400 uppercase">ECONOMY</span>
-            <TrendIndicator value="+2.4%" trend="up" isPositiveGood className="justify-center mt-1 text-sm font-bold" />
-          </Card>
-          <Card variant="glass" className="flex flex-col p-2 text-center border-gold/15">
-            <span className="text-[9px] font-mono text-slate-400 uppercase">APPROVAL</span>
-            <TrendIndicator value="+4%" trend="up" isPositiveGood className="justify-center mt-1 text-sm font-bold" />
-          </Card>
-          <Card variant="glass" className="flex flex-col p-2 text-center border-gold/15">
-            <span className="text-[9px] font-mono text-slate-400 uppercase">TREASURY</span>
-            <TrendIndicator value={option?.cost ? `-${option.cost}` : '-₹14k Cr'} trend="down" isPositiveGood={false} className="justify-center mt-1 text-sm font-bold" />
-          </Card>
+          {statChanges.map((change) => (
+            <Card key={change.statKey} variant="glass" className="flex flex-col p-2 text-center border-gold/15">
+              <span className="text-[9px] font-mono text-slate-400 uppercase">{change.label}</span>
+              <TrendIndicator
+                value={change.formattedDelta}
+                trend={change.delta >= 0 ? 'up' : 'down'}
+                isPositiveGood={change.isPositiveGood}
+                className="justify-center mt-1 text-sm font-bold"
+              />
+              <span className="text-[9px] font-sans text-slate-400 mt-1">
+                New: <span className="text-slate-200 font-mono">{change.formattedNew}</span>
+              </span>
+            </Card>
+          ))}
         </div>
       </div>
 
@@ -86,10 +93,10 @@ export const DecisionResultView: React.FC<DecisionResultViewProps> = ({
           </span>
         </div>
         <h4 className="font-heading text-xs font-bold text-slate-100 uppercase leading-snug">
-          "PM ANNOUNCES HISTORIC RELIEF PACKAGE FOR FARMERS ACROSS INDIA"
+          &quot;GOVERNMENT ANNOUNCES ACTION PLAN FOR {decisionTitle.toUpperCase()}&quot;
         </h4>
         <p className="text-[11px] text-slate-300 font-sans line-clamp-2">
-          Public reaction remains overwhelmingly positive as financial aid reaches rural districts ahead of monsoon sowing season.
+          {result?.summary || 'Public and media reaction following the Prime Minister\'s swift executive decision.'}
         </p>
       </Card>
 

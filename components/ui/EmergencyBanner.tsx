@@ -3,6 +3,7 @@
 import React from 'react';
 import { AlertTriangle, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useGameStore } from '@/game/store/useGameStore';
 
 interface EmergencyBannerProps {
   title?: string;
@@ -13,12 +14,17 @@ interface EmergencyBannerProps {
 }
 
 export const EmergencyBanner: React.FC<EmergencyBannerProps> = ({
-  title = 'Flood in Assam',
-  description = 'Lives and infrastructure at risk. People are looking for your response.',
+  title: propTitle,
+  description: propDescription,
   urgentCount = 3,
   onRespondClick,
   className,
 }) => {
+  const activeDecision = useGameStore((state) => state.activeDecision);
+
+  const title = propTitle ?? activeDecision.title;
+  const description = propDescription ?? activeDecision.description;
+
   return (
     <div
       onClick={onRespondClick}

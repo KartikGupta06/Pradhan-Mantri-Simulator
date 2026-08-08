@@ -4,6 +4,7 @@ import React from 'react';
 import { CountryStatBlock } from './CountryStatBlock';
 import { Landmark, TrendingUp, Percent, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useGameStore } from '@/game/store/useGameStore';
 
 interface TopStatusBarProps {
   treasury?: string;
@@ -14,12 +15,21 @@ interface TopStatusBarProps {
 }
 
 export const TopStatusBar: React.FC<TopStatusBarProps> = ({
-  treasury = '₹ 18,450 Cr',
-  gdp = '₹ 320.45 T',
-  inflation = '4.1%',
-  unemployment = '6.2%',
+  treasury: propTreasury,
+  gdp: propGdp,
+  inflation: propInflation,
+  unemployment: propUnemployment,
   className,
 }) => {
+  const gameState = useGameStore((state) => state.gameState);
+
+  const treasury =
+    propTreasury ?? `₹ ${gameState.economy.treasury.toLocaleString('en-IN')} Cr`;
+  const gdp = propGdp ?? `₹ ${gameState.economy.gdp.toFixed(2)} T`;
+  const inflation = propInflation ?? `${gameState.economy.inflation.toFixed(1)}%`;
+  const unemployment =
+    propUnemployment ?? `${gameState.economy.unemployment.toFixed(1)}%`;
+
   return (
     <div
       className={cn(
@@ -30,21 +40,21 @@ export const TopStatusBar: React.FC<TopStatusBarProps> = ({
       <CountryStatBlock
         label="Treasury"
         value={treasury}
-        change="2.4%"
+        change="0.0%"
         trend="up"
         icon={<Landmark className="w-3 h-3" />}
       />
       <CountryStatBlock
         label="GDP"
         value={gdp}
-        change="2.1%"
+        change="0.0%"
         trend="up"
         icon={<TrendingUp className="w-3 h-3" />}
       />
       <CountryStatBlock
         label="Inflation"
         value={inflation}
-        change="-0.3%"
+        change="0.0%"
         trend="down"
         isPositiveGood={false}
         icon={<Percent className="w-3 h-3" />}
@@ -52,7 +62,7 @@ export const TopStatusBar: React.FC<TopStatusBarProps> = ({
       <CountryStatBlock
         label="Unemploy."
         value={unemployment}
-        change="0.4%"
+        change="0.0%"
         trend="up"
         isPositiveGood={false}
         icon={<Users className="w-3 h-3" />}

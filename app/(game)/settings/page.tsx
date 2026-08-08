@@ -9,11 +9,18 @@ import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { usePWAContext } from '@/providers/PWAProvider';
-import { UserCheck, Trophy, Save, Settings, Download, ShieldCheck } from 'lucide-react';
+import { useGameStore } from '@/game/store/useGameStore';
+import { UserCheck, Trophy, Save, Settings, Download, ShieldCheck, RefreshCw } from 'lucide-react';
 
 export default function SettingsPage() {
   const [activeModule, setActiveModule] = useState<string | null>(null);
   const { isInstallable, promptInstall } = usePWAContext();
+  const resetGame = useGameStore((state) => state.resetGame);
+
+  const handleReset = () => {
+    resetGame();
+    setActiveModule(null);
+  };
 
   return (
     <motion.div
@@ -58,6 +65,27 @@ export default function SettingsPage() {
         />
       </div>
 
+      {/* Dev Reset Control Card */}
+      <Card variant="solid" className="flex items-center justify-between p-3.5 border-crimson/40 bg-navy-dark">
+        <div className="flex flex-col text-left">
+          <h4 className="font-heading text-xs font-bold text-crimson uppercase">
+            Developer Controls: Reset Game
+          </h4>
+          <p className="text-[11px] text-slate-300 font-sans">
+            Clear localStorage saved state and restore initial 2029 values.
+          </p>
+        </div>
+        <Button
+          variant="crimson"
+          size="sm"
+          onClick={handleReset}
+          className="flex items-center gap-1.5 shrink-0"
+        >
+          <RefreshCw className="w-4 h-4" />
+          <span>Reset Game</span>
+        </Button>
+      </Card>
+
       {/* Live PWA Installation Card if Installable */}
       {isInstallable && (
         <Card variant="gold" className="flex items-center justify-between p-3.5 border-gold/40">
@@ -81,13 +109,13 @@ export default function SettingsPage() {
         <div className="flex items-center gap-1.5 text-emerald">
           <ShieldCheck className="w-4 h-4" />
           <span className="font-heading text-xs font-bold uppercase tracking-wide">
-            Prototype Architecture Status
+            Engine & State Status
           </span>
         </div>
         <p className="text-[10px] text-slate-400 font-mono leading-relaxed">
-          Screen Architecture: 5 Working Nav Destinations<br />
-          Page Transitions: Framer Motion Spring Presets<br />
-          Design Tokens: Part 1 Game UI Kit Enforced
+          Engine Version: Part 5 Playable Decision Loop<br />
+          Persistence: localStorage (pradhan-mantri-simulator-save-v1)<br />
+          Active State: Strongly Typed Zustand Architecture
         </p>
       </Card>
 

@@ -6,6 +6,7 @@ import { Badge } from './Badge';
 import { NotificationDot } from './NotificationDot';
 import { Bell, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useGameStore } from '@/game/store/useGameStore';
 
 interface PlayerProfileCardProps {
   name?: string;
@@ -20,16 +21,24 @@ interface PlayerProfileCardProps {
 }
 
 export const PlayerProfileCard: React.FC<PlayerProfileCardProps> = ({
-  name = 'KARTIK GUPTA',
-  title = 'Prime Minister of India',
-  party = 'Bharat Vikas Party',
-  year = '2029',
-  week = 'May, Week 2',
+  name: propName,
+  title: propTitle,
+  party: propParty,
+  year: propYear,
+  week: propWeek,
   notificationsCount = 3,
   onNotificationClick,
   onSettingsClick,
   className,
 }) => {
+  const gameState = useGameStore((state) => state.gameState);
+
+  const name = propName ?? gameState.player.name;
+  const title = propTitle ?? gameState.player.title;
+  const party = propParty ?? gameState.player.party;
+  const year = propYear ?? `${gameState.time.year}`;
+  const week = propWeek ?? `${gameState.time.month}, Week ${gameState.time.week}`;
+
   return (
     <div className={cn('w-full flex items-center justify-between p-2 rounded-game glass-panel border-gold/20', className)}>
       {/* Left Avatar & Info */}

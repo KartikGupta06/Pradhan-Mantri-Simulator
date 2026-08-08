@@ -3,14 +3,14 @@
 import React from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { PolicyOption } from './DecisionDetailsView';
-import { ShieldAlert, Coins, CheckCircle2 } from 'lucide-react';
+import { DecisionOption } from '@/types/decision';
+import { ShieldAlert, CheckCircle2 } from 'lucide-react';
 
 interface DecisionConfirmDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  option: PolicyOption | null;
+  option: DecisionOption | null;
 }
 
 export const DecisionConfirmDialog: React.FC<DecisionConfirmDialogProps> = ({
@@ -20,6 +20,11 @@ export const DecisionConfirmDialog: React.FC<DecisionConfirmDialogProps> = ({
   option,
 }) => {
   if (!option) return null;
+
+  const costDisplay =
+    option.effects.treasury !== undefined
+      ? `₹ ${Math.abs(option.effects.treasury)} Cr`
+      : 'N/A';
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="CONFIRM EXECUTIVE POLICY">
@@ -38,7 +43,7 @@ export const DecisionConfirmDialog: React.FC<DecisionConfirmDialogProps> = ({
 
         <div className="flex items-center justify-between px-3 py-2 rounded-game bg-navy-dark border border-gold/15 text-xs">
           <span className="font-sans text-slate-400">Estimated Cost:</span>
-          <span className="font-mono font-bold text-gold-light">{option.cost}</span>
+          <span className="font-mono font-bold text-gold-light">{costDisplay}</span>
         </div>
 
         <div className="flex gap-2 justify-end pt-2 border-t border-gold/15">

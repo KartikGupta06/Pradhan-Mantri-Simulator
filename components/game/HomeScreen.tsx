@@ -12,9 +12,12 @@ import { PrimaryActionBar } from '@/components/game/PrimaryActionBar';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Button } from '@/components/ui/Button';
 import { DecisionFlowContainer } from '@/components/game/decision/DecisionFlowContainer';
+import { useGameStore } from '@/game/store/useGameStore';
+import { RefreshCw } from 'lucide-react';
 
 export const HomeScreen: React.FC = () => {
   const [activeModal, setActiveModal] = useState<string | null>(null);
+  const resetGame = useGameStore((state) => state.resetGame);
 
   // If Decision Flow active, render full decision flow experience
   if (activeModal === 'decision') {
@@ -24,6 +27,11 @@ export const HomeScreen: React.FC = () => {
       </div>
     );
   }
+
+  const handleResetGame = () => {
+    resetGame();
+    setActiveModal(null);
+  };
 
   return (
     <motion.div
@@ -49,9 +57,6 @@ export const HomeScreen: React.FC = () => {
 
       {/* 4. Active Crisis Panel */}
       <EmergencyBanner
-        title="Flood in Assam"
-        description="Lives and infrastructure at risk. People are looking for your response."
-        urgentCount={3}
         onRespondClick={() => setActiveModal('decision')}
       />
 
@@ -65,16 +70,45 @@ export const HomeScreen: React.FC = () => {
         onObjectivesClick={() => setActiveModal('objectives')}
       />
 
-      {/* Interactive Bottom Sheet Popup Shell for UI Feedback */}
+      {/* Interactive Bottom Sheet Popup Shell for UI Feedback & Dev Settings */}
       <BottomSheet
         isOpen={!!activeModal && activeModal !== 'decision'}
         onClose={() => setActiveModal(null)}
         title={activeModal ? activeModal.toUpperCase() + ' DETAILS' : ''}
       >
         <div className="flex flex-col gap-3 py-2 text-center">
-          <p className="text-xs text-slate-300 font-sans">
-            Strategic view placeholder for <span className="text-gold font-bold">{activeModal}</span>. Game engine simulation logic will connect here in future sprints.
-          </p>
+          {activeModal === 'settings' ? (
+            <div className="flex flex-col gap-3 text-left">
+              <p className="text-xs text-slate-300 font-sans">
+                PM Office Settings & Developer Controls.
+              </p>
+              <div className="p-3 bg-navy-dark rounded-game border border-crimson/30 flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-mono font-bold text-crimson uppercase">
+                    DEV RESET GAME STATE
+                  </span>
+                  <span className="text-[9px] font-mono text-slate-400">RESTORE 2029 INITIAL</span>
+                </div>
+                <p className="text-[11px] text-slate-300 font-sans">
+                  Clears local storage save data and restores the initial game state.
+                </p>
+                <Button
+                  variant="crimson"
+                  size="sm"
+                  onClick={handleResetGame}
+                  className="flex items-center justify-center gap-1.5 mt-1"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Reset Game (Dev Only)</span>
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-xs text-slate-300 font-sans">
+              Strategic view placeholder for <span className="text-gold font-bold">{activeModal}</span>. Game engine simulation logic will connect here in future sprints.
+            </p>
+          )}
+
           <div className="pt-2 border-t border-gold/15 flex justify-end">
             <Button variant="primary" size="sm" onClick={() => setActiveModal(null)}>
               Close Panel

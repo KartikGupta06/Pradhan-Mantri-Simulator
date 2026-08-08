@@ -1,7 +1,6 @@
-/**
- * Simulation Engine Core Architecture Placeholder
- * (To be implemented in Sprint 3)
- */
+export * from './decisionEngine';
+export * from './timeUtils';
+export * from './persistence';
 
 export interface EngineModule {
   name: string;
@@ -10,5 +9,5 @@ export interface EngineModule {
 
 export const ENGINE_METADATA: EngineModule = {
   name: 'Pradhan Mantri Simulation Engine',
-  version: '0.1.0-alpha',
+  version: '0.5.0',
 };
